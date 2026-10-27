@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Timestamp-Notepad</title>
+  
+  <!-- Pengaturan PWA & Mobile Meta Tags -->
+  <meta name="theme-color" content="#2f5d50" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Timestamp-Notepad" />
+
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --ink: #1f1a14;
+      --muted: #6e655b;
+      --card: #fffdf8;
+      --line: #e4dccd;
+      --accent: #2f5d50;
+      --accent-ink: #fff;
+      --accent-2: #1f3f36;
+      --btn2: #a0622d;
+      --btn2-ink: #fff;
+      --paper: #fff;
+      --danger: #8d3a32;
+      --danger-line: #d8b2ad;
+      --hl: #ffe9a8;
+      --star: #c9971f;
+      --pin: #2563eb;
+      --pin-bg: #eff6ff;
+    }
+    html.dark {
+      --bg: #171512;
+      --ink: #f3eee6;
+      --muted: #b3a89a;
+      --card: #221f1b;
+      --line: #3a342c;
+      --accent: #6ea894;
+      --accent-ink: #12211c;
+      --accent-2: #e7f3ee;
+      --btn2: #d9a867;
+      --btn2-ink: #2a1c0c;
+      --paper: #1c1a17;
+      --danger: #f0b8b2;
+      --danger-line: #6b4640;
+      --hl: #5a4d1e;
+      --star: #e7c663;
+      --pin: #60a5fa;
+      --pin-bg: #1e293b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 14px 10px;
+    }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+      margin-bottom: 8px;
+    }
+    .top-brand {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .top-brand h1 {
+      font-size: 1.15rem;
+      margin: 0;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .top-brand p.lead {
+      margin: 2px 0 0;
+      font-size: 0.78rem;
+      line-height: 1.2;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .top-acts {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .top-acts button {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      line-height: 1;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    label { display: block; font-size: 0.85rem; margin: 10px 0 6px; color: var(--muted); }
+    input, textarea, button, select { font: inherit; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--paper);
+      color: var(--ink);
+    }
+    textarea { min-height: 80px; resize: none; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .row.split { flex-wrap: nowrap; }
+    .row.split .wide { flex: 1; width: auto; }
+    .input-with-action {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .input-with-action input {
+      flex: 1;
+      min-width: 0;
+    }
+    .btn-addon {
+      padding: 0 16px;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+      font-size: 0.88rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-addon:hover {
+      background: var(--card);
+      border-color: var(--accent);
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+    button.ghost {
+      background: transparent;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+    }
+    button.alt { background: var(--btn2); color: var(--btn2-ink); }
+    button.wide {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: clamp(0.95rem, 2vw, 1.05rem);
+      border-radius: 999px;
+    }
+    button.danger, button.star, button.pinBtn, button.dupBtn, button.smBtn {
+      background: transparent;
+      border: 1px solid var(--line);
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      border-radius: 10px;
+    }
+    button.danger { color: var(--danger); border-color: var(--danger-line); }
+    button.star { color: var(--muted); }
+    button.star.fav { color: var(--star); border-color: var(--star); font-weight: 700; }
+    button.pinBtn { color: var(--muted); }
+    button.pinBtn.pinned { color: var(--pin); border-color: var(--pin); font-weight: 700; background: var(--pin-bg); }
+    button.dupBtn { color: var(--accent-2); }
+    button.smBtn { color: var(--accent-2); padding: 4px 8px; font-size: 0.75rem; }
+
+    #setup { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    #app {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    header.note {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+    .header-info {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .header-info:hover {
+      background: rgba(0,0,0,0.03);
+    }
+    html.dark .header-info:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    header.note h2 { margin: 0; font-size: 1.25rem; }
+    header.note .date { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+    header.note .date span { display: block; margin-top: 2px; }
+
+    /* Keyframes dan Penampung Marquee Berjalan */
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-box {
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+      width: 100%;
+    }
+    .marquee-track {
+      display: inline-flex;
+      white-space: nowrap;
+      will-change: transform;
+      animation: marqueeScroll linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+    .marquee-track span {
+      padding-right: 48px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .marquee-header {
+      animation-duration: 14s;
+    }
+    .marquee-title {
+      animation-duration: 16s;
+    }
+    
+    #metaEditCard {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    #metaEditCard.on { display: flex; }
+    #metaEditCard .row { margin-top: 10px; }
+    #metaEditCard input { padding: 10px 12px; }
+    #metaEditCard label { margin: 6px 0 4px; }
+
+    .menu {
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      align-items: stretch;
+    }
+    .menu-toggle {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--accent-2);
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 48px;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .menu-toggle:hover {
+      background: var(--paper);
+      border-color: var(--accent);
+    }
+    .menu-list {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      z-index: 60;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 230px;
+      max-height: calc(100vh - 120px);
+      max-height: calc(100dvh - 120px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+    }
+    .menu.open .menu-list { display: flex; }
+    .menu-list button {
+      background: transparent;
+      color: var(--accent-2);
+      border: 0;
+      text-align: left;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.92rem;
+      white-space: nowrap;
+    }
+    .menu-list button:hover { background: var(--bg); }
+    
+    #archive, #folderPickerModal, #backConfirmModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: rgba(0,0,0,0.45);
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    #archive.on, #folderPickerModal.on, #backConfirmModal.on { display: flex; }
+    #archive .panel, #folderPickerModal .panel, #backConfirmModal .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 580px;
+      max-height: 86dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+    }
+    #folderPickerModal .panel, #backConfirmModal .panel {
+      max-width: 440px;
+    }
+    #archive .panel h3, #folderPickerModal .panel h3, #backConfirmModal .panel h3 { margin: 0 0 10px; }
+
+    .folder-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .folder-bar {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .folder-pill {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .folder-pill.active {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+    .folder-manage-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .folder-manage-bar span {
+      font-size: 0.82rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .folder-manage-bar .f-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    #archiveList { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+    #archiveFoot { margin-top: 12px; flex-shrink: 0; }
+    
+    .noteItem {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      background: var(--paper);
+    }
+    .noteItem.current { border-color: var(--accent); }
+    .noteItem .info { flex: 1; min-width: 0; cursor: pointer; }
+    .noteItem .info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .noteItem .info small { color: var(--muted); }
+    .noteItem-acts { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    .folder-select {
+      font-size: 0.78rem;
+      padding: 4px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--ink);
+      max-width: 110px;
+    }
+
+    #searchBar { display: none; flex-shrink: 0; gap: 8px; margin-bottom: 10px; align-items: center; }
+    #searchBar.on { display: flex; }
+    #searchBar input[type="search"] { padding: 8px 12px; flex: 1; }
+    #searchBar button { padding: 8px 14px; }
+    #favOnly { width: auto; }
+    #searchBar label.fb { margin: 0; white-space: nowrap; }
+    #searchInfo { flex-shrink: 0; margin: 0 0 8px; color: var(--muted); font-size: 0.8rem; display: none; }
+    #doc {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      min-height: 0;
+      line-height: 1.55;
+    }
+    .entry {
+      margin: 0 0 18px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease;
+    }
+    .entry.pinned {
+      border-left: 3px solid var(--pin);
+      padding-left: 10px;
+    }
+    .entry.dim { opacity: 0.35; }
+    .entry .body { margin: 0 0 4px; white-space: pre-wrap; cursor: pointer; }
+    .entry .body:hover { text-decoration: underline dotted; }
+    .entry .body mark { background: var(--hl); color: inherit; border-radius: 3px; }
+    .editor { display: flex; flex-direction: column; gap: 8px; margin: 0 0 4px; }
+    .editor textarea { min-height: 64px; }
+    .editor .edrow { display: flex; gap: 8px; }
+    .editor .edrow button { flex: 1; }
+    .meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .meta .acts { display: flex; gap: 6px; }
+    .stamp {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .stamp .favMark { color: var(--star); font-weight: 700; }
+    .stamp .pinMark { color: var(--pin); font-weight: 700; }
+    .stamp .editStamp { display: block; font-style: italic; margin-top: 2px; }
+    .composer { flex-shrink: 0; margin-top: 10px; padding: 10px; }
+    .composer label { display: none; }
+    .composer textarea { min-height: 56px; padding: 10px; border-radius: 10px; }
+    .status { margin: 6px 0 0; color: var(--muted); font-size: 0.75rem; }
+
+    /* Penyesuaian Tata Letak Layar Mobile */
+    @media (max-width: 600px) {
+      .input-with-action {
+        flex-direction: column;
+      }
+      .input-with-action .btn-addon {
+        width: 100%;
+        padding: 10px 12px;
+        min-height: 42px;
+      }
+      .noteItem {
+        align-items: flex-start;
+      }
+      .noteItem-acts {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 5px;
+        min-width: 110px;
+      }
+      .noteItem-acts .folder-select {
+        max-width: none;
+        width: 100%;
+        text-align: left;
+      }
+      .noteItem-acts button {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="top-brand">
+        <h1>Timestamp-Notepad</h1>
+        <div class="marquee-box">
+          <div class="marquee-track marquee-header">
+            <span>Catatan tersimpan otomatis, multi-Note, dengan arsip.</span>
+            <span aria-hidden="true">Catatan tersimpan otomatis, multi-Note, dengan arsip.</span>
+          </div>
+        </div>
+      </div>
+      <div class="top-acts">
+        <button class="ghost" id="themeBtn" type="button">Mode gelap</button>
+        <button class="ghost" id="installPwaBtn" type="button" style="display: none;">Pasang Aplikasi</button>
+      </div>
+    </div>
+
+    <section id="setup" class="card">
+      <label for="title">Judul Note</label>
+      <input id="title" type="text" placeholder="Contoh: Catatan rapat" />
+      
+      <label for="noteDate">Tanggal</label>
+      <div class="input-with-action">
+        <input id="noteDate" type="date" />
+        <button id="appendDateHomeBtn" class="btn-addon" type="button" title="Sisipkan tanggal ke judul">Sisipkan tanggal pada judul Note</button>
+      </div>
+
+      <label for="author">Nama Pencatat (opsional)</label>
+      <input id="author" type="text" placeholder="Contoh: Budi" />
+      <div class="row">
+        <button class="wide" id="createBtn" type="button">Buat file baru</button>
+      </div>
+      <div class="row">
+        <button class="wide alt" id="openArchiveB" type="button">Buka daftar Note</button>
+      </div>
+      <div class="row split">
+        <button class="ghost wide" id="importDocHomeBtn" type="button">Import TXT / MD</button>
+        <button class="ghost wide" id="importHomeBtn" type="button">Import JSON</button>
+        <button class="ghost wide" id="exportHomeBtn" type="button">Export JSON</button>
+      </div>
+    </section>
+
+    <section id="app">
+      <header class="note">
+        <div class="header-info" id="headerInfo" title="Klik untuk mengedit judul, tanggal, atau nama pencatat">
+          <div id="viewTitleBox"></div>
+          <div class="date" id="viewDate"></div>
+        </div>
+        <div class="menu" id="menu">
+          <button class="menu-toggle" id="menuBtn" type="button" aria-haspopup="true" aria-expanded="false" title="Menu Opsi">⋮</button>
+          <div class="menu-list" id="menuList">
+            <button id="editMetaBtn" type="button">Edit info Note</button>
+            <button id="searchBtn" type="button">Cari</button>
+            <button id="archiveBtn" type="button">Daftar Note</button>
+            <button id="txtBtn" type="button">Export TXT</button>
+            <button id="mdBtn" type="button">Export MD</button>
+            <button id="importDocBtn" type="button">Import TXT / MD</button>
+            <button id="jsonBtn" type="button">Export JSON (semua Note)</button>
+            <button id="importBtn" type="button">Import JSON</button>
+            <button id="newBtn" type="button">File baru</button>
+          </div>
+        </div>
+      </header>
+
+      <form id="metaEditCard">
+        <label for="editMetaTitle">Judul Note</label>
+        <input id="editMetaTitle" type="text" required />
+
+        <label for="editMetaDate">Tanggal</label>
+        <div class="input-with-action">
+          <input id="editMetaDate" type="date" required />
+          <button id="appendDateEditBtn" class="btn-addon" type="button" title="Sisipkan tanggal ke judul">Sisipkan tanggal pada judul Note</button>
+        </div>
+
+        <label for="editMetaAuthor">Nama Pencatat (opsional)</label>
+        <input id="editMetaAuthor" type="text" placeholder="Contoh: Budi" />
+
+        <div class="row split">
+          <button type="submit" class="wide">Simpan info</button>
+          <button type="button" class="ghost wide" id="cancelMetaEditBtn">Batal</button>
+        </div>
+      </form>
+
+      <div id="searchBar">
+        <input id="searchInput" type="search" placeholder="Cari di catatan..." />
+        <input type="checkbox" id="favOnly" />
+        <label for="favOnly" class="fb">⭑ penting</label>
+        <button class="ghost" id="searchClose" type="button">Tutup</button>
+      </div>
+      <p id="searchInfo"></p>
+      <div id="doc" aria-live="polite"></div>
+      <form id="composer" class="composer card">
+        <label for="message">Teks</label>
+        <textarea id="message" placeholder="Tulis di sini, lalu Catat (Ctrl+Enter)..."></textarea>
+        <div class="row">
+          <button class="wide" type="submit">Catat</button>
+        </div>
+        <p class="status" id="status">Belum ada perubahan.</p>
+      </form>
+    </section>
+  </div>
+
+  <div id="archive">
+    <div class="panel">
+      <h3>Daftar Note</h3>
+      
+      <div class="folder-controls">
+        <div class="folder-bar" id="folderPills"></div>
+        <div class="folder-manage-bar" id="folderManageBar">
+          <span id="folderStatusLabel">Folder: Semua Note</span>
+          <div class="f-actions">
+            <button type="button" class="smBtn" id="addFolderBtn">+ Buat Folder</button>
+            <button type="button" class="smBtn" id="editFolderBtn">Ubah Nama</button>
+            <button type="button" class="smBtn danger" id="delFolderBtn">Hapus Folder</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="archiveList"></div>
+      <div id="archiveFoot">
+        <div class="row split">
+          <button class="wide danger" id="wipeBtn" type="button">Hapus semua Note</button>
+          <button class="wide danger" id="wipeFoldersBtn" type="button">Hapus semua Folder</button>
+        </div>
+        <div class="row">
+          <button class="wide ghost" id="archiveClose" type="button">Tutup</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="folderPickerModal">
+    <div class="panel">
+      <h3>Simpan ke Folder mana?</h3>
+      <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.9rem;">
+        Pilih folder tujuan untuk Note saat ini sebelum beralih ke pembuatan file baru.
+      </p>
+
+      <label for="targetFolderSelect" style="margin-top: 0;">Pilih Folder Tujuan</label>
+      <select id="targetFolderSelect"></select>
+
+      <div class="row" style="margin-top: 10px;">
+        <button type="button" class="ghost wide" id="newFolderPickerBtn">+ Buat Folder Baru</button>
+      </div>
+
+      <div class="row" style="margin-top: 14px;">
+        <button type="button" class="wide" id="confirmTargetFolderBtn">Simpan ke Folder Terpilih</button>
+      </div>
+      <div class="row">
+        <button type="button" class="wide alt" id="skipFolderBtn">Simpan tanpa Folder</button>
+      </div>
+      <div class="row">
+        <button type="button" class="wide ghost" id="cancelFolderPickerBtn">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="backConfirmModal">
+    <div class="panel">
+      <h3>Tinggalkan Halaman Editor?</h3>
+      <p style="margin: 0 0 12px; color: var(--muted); font-size: 0.9rem;">
+        Anda menekan tombol kembali pada peramban. Apakah Anda ingin tetap berada di catatan ini atau membuka Daftar Note?
+      </p>
+      <div class="row" style="margin-top: 14px;">
+        <button type="button" class="wide" id="stayEditorBtn">Tetap di Sini</button>
+      </div>
+      <div class="row">
+        <button type="button" class="wide alt" id="leaveToArchiveBtn">Buka Daftar Note</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================================
+       PWA: SERVICE WORKER & WEB APP MANIFEST INLINE SETUP
+       ========================================================================= */
+    const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="100" fill="#2f5d50"/>
+      <path d="M140 110h232v292H140z" fill="#fffdf8" rx="20"/>
+      <path d="M180 180h152M180 230h152M180 280h110M180 330h80" stroke="#2f5d50" stroke-width="22" stroke-linecap="round"/>
+      <circle cx="340" cy="330" r="38" fill="#a0622d"/>
+      <path d="M340 310v22l14 8" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    </svg>`;
+    const iconDataUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+
+    const appleIcon = document.createElement("link");
+    appleIcon.rel = "apple-touch-icon";
+    appleIcon.href = iconDataUrl;
+    document.head.appendChild(appleIcon);
+
+    const favicon = document.createElement("link");
+    favicon.type = "image/svg+xml";
+    favicon.rel = "icon";
+    favicon.href = iconDataUrl;
+    document.head.appendChild(favicon);
+
+    const manifest = {
+      name: "Timestamp-Notepad",
+      short_name: "TimestampNote",
+      description: "Catatan tersimpan otomatis dengan penanda waktu, multi-note, dan offline first.",
+      start_url: window.location.href,
+      scope: "./",
+      display: "standalone",
+      background_color: "#f4f1ea",
+      theme_color: "#2f5d50",
+      icons: [
+        {
+          src: iconDataUrl,
+          sizes: "192x192 512x512",
+          type: "image/svg+xml",
+          purpose: "any maskable"
+        }
+      ]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+    const manifestLink = document.createElement("link");
+    manifestLink.rel = "manifest";
+    manifestLink.href = URL.createObjectURL(manifestBlob);
+    document.head.appendChild(manifestLink);
+
+    let deferredPrompt = null;
+    const installPwaBtn = document.getElementById("installPwaBtn");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installPwaBtn.style.display = "inline-block";
+    });
+
+    installPwaBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        installPwaBtn.style.display = "none";
+      }
+      deferredPrompt = null;
+    });
+
+    window.addEventListener("appinstalled", () => {
+      installPwaBtn.style.display = "none";
+      deferredPrompt = null;
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        const swScript = `
+          const CACHE_NAME = 'ts-notepad-cache-v1';
+          self.addEventListener('install', (e) => {
+            self.skipWaiting();
+          });
+          self.addEventListener('activate', (e) => {
+            e.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (e) => {
+            if (e.request.method !== 'GET') return;
+            e.respondWith(
+              fetch(e.request)
+                .then((res) => {
+                  const copy = res.clone();
+                  caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+                  return res;
+                })
+                .catch(() => caches.match(e.request))
+            );
+          });
+        `;
+        const swBlob = new Blob([swScript], { type: "application/javascript" });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+      });
+    }
+
+    /* =========================================================================
+       CORE LOGIKA TIMESTAMP-NOTEPAD
+       ========================================================================= */
+    const KEY = "timestamp-notepad-v2";
+    const THEME_KEY = "timestamp-notepad-theme";
+    const AUTHOR_KEY = "timestamp-notepad-author";
+    const LAST_BACKUP_KEY = "timestamp-notepad-last-backup";
+    const BACKUP_INTERVAL_DAYS = 3;
+
+    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    const setup = document.getElementById("setup");
+    const app = document.getElementById("app");
+    const titleInput = document.getElementById("title");
+    const dateInput = document.getElementById("noteDate");
+    const authorInput = document.getElementById("author");
+    const doc = document.getElementById("doc");
+    const message = document.getElementById("message");
+    const status = document.getElementById("status");
+    const themeBtn = document.getElementById("themeBtn");
+    const menu = document.getElementById("menu");
+    const menuBtn = document.getElementById("menuBtn");
+    const composer = document.getElementById("composer");
+    const searchBar = document.getElementById("searchBar");
+    const searchInput = document.getElementById("searchInput");
+    const searchClose = document.getElementById("searchClose");
+    const searchInfo = document.getElementById("searchInfo");
+    const favOnly = document.getElementById("favOnly");
+    const archive = document.getElementById("archive");
+    const archiveList = document.getElementById("archiveList");
+
+    const folderPills = document.getElementById("folderPills");
+    const folderStatusLabel = document.getElementById("folderStatusLabel");
+    const addFolderBtn = document.getElementById("addFolderBtn");
+    const editFolderBtn = document.getElementById("editFolderBtn");
+    const delFolderBtn = document.getElementById("delFolderBtn");
+
+    const folderPickerModal = document.getElementById("folderPickerModal");
+    const targetFolderSelect = document.getElementById("targetFolderSelect");
+    const newFolderPickerBtn = document.getElementById("newFolderPickerBtn");
+    const confirmTargetFolderBtn = document.getElementById("confirmTargetFolderBtn");
+    const skipFolderBtn = document.getElementById("skipFolderBtn");
+    const cancelFolderPickerBtn = document.getElementById("cancelFolderPickerBtn");
+
+    const backConfirmModal = document.getElementById("backConfirmModal");
+    const stayEditorBtn = document.getElementById("stayEditorBtn");
+    const leaveToArchiveBtn = document.getElementById("leaveToArchiveBtn");
+
+    const headerInfo = document.getElementById("headerInfo");
+    const viewTitleBox = document.getElementById("viewTitleBox");
+    const metaEditCard = document.getElementById("metaEditCard");
+    const editMetaBtn = document.getElementById("editMetaBtn");
+    const editMetaTitle = document.getElementById("editMetaTitle");
+    const editMetaDate = document.getElementById("editMetaDate");
+    const editMetaAuthor = document.getElementById("editMetaAuthor");
+    const cancelMetaEditBtn = document.getElementById("cancelMetaEditBtn");
+
+    const appendDateHomeBtn = document.getElementById("appendDateHomeBtn");
+    const appendDateEditBtn = document.getElementById("appendDateEditBtn");
+
+    const state = { 
+      notes: [], 
+      folders: [], 
+      activeId: null 
+    };
+    let activeFolderFilter = "ALL";
+    let searchMode = false;
+    let editingIndex = null;
+
+    function newId(prefix = "n") {
+      return prefix + Date.now() + Math.random().toString(36).slice(2, 8);
+    }
+    function blankNote(title, date, author) {
+      return { id: newId("n"), title, date, author, folderId: null, entries: [], draft: "" };
+    }
+    function activeNote() {
+      return state.notes.find(n => n.id === state.activeId) || null;
+    }
+
+    function pad(n) { return String(n).padStart(2, "0"); }
+    function nowStamp() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+    function clock() {
+      const t = new Date();
+      return `${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`;
+    }
+    function formatNoteDate(iso) {
+      const [y, m, d] = String(iso).split("-").map(Number);
+      if (!y || !m || !d) return String(iso);
+      const dt = new Date(y, m - 1, d);
+      return `${days[dt.getDay()]}, ${d} ${months[m - 1]} ${y}`;
+    }
+    function parseIndoDateToISO(text) {
+      const trimmed = text.trim();
+      const match = trimmed.match(/^(?:[A-Za-z]+,\s*)?(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/);
+      if (!match) return null;
+      const day = parseInt(match[1], 10);
+      const monthIdx = months.findIndex(m => m.toLowerCase() === match[2].toLowerCase());
+      const year = parseInt(match[3], 10);
+      if (monthIdx === -1 || day < 1 || day > 31) return null;
+      return `${year}-${pad(monthIdx + 1)}-${pad(day)}`;
+    }
+    function safeName(name) {
+      return name.trim().replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80) || "timestamp-notepad";
+    }
+    function stampBase(entry, index) {
+      return `#${index + 1}. ${entry.stamp}`;
+    }
+    function numbered(entry, index) {
+      let res = stampBase(entry, index);
+      if (entry.pinned) res += " [pin]";
+      if (entry.fav) res += " [penting]";
+      if (entry.edited) res += ` (diedit: ${entry.edited})`;
+      return res;
+    }
+    function save(label) {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      status.textContent = `${label} ${clock()}`;
+    }
+    function load() {
+      try {
+        const data = JSON.parse(localStorage.getItem(KEY) || "null");
+        if (!data || !Array.isArray(data.notes)) return null;
+        if (!Array.isArray(data.folders)) data.folders = [];
+        return data;
+      } catch { return null; }
+    }
+    function highlight(text, query) {
+      if (!query) return document.createTextNode(text);
+      const frag = document.createDocumentFragment();
+      let i = 0;
+      while (true) {
+        const at = text.toLowerCase().indexOf(query, i);
+        if (at < 0) { frag.append(text.slice(i)); break; }
+        frag.append(text.slice(i, at));
+        const mark = document.createElement("mark");
+        mark.textContent = text.slice(at, at + query.length);
+        frag.append(mark);
+        i = at + query.length;
+      }
+      return frag;
+    }
+
+    function appendDateToInput(inputEl, dateVal) {
+      if (!dateVal) return;
+      const isoRegex = /\b\d{4}-\d{2}-\d{2}\b/g;
+      let cur = inputEl.value.replace(isoRegex, "").replace(/\s+/g, " ").trim();
+      inputEl.value = cur ? `${cur} ${dateVal}` : dateVal;
+    }
+
+    appendDateHomeBtn.addEventListener("click", () => {
+      appendDateToInput(titleInput, dateInput.value);
+    });
+    appendDateEditBtn.addEventListener("click", () => {
+      appendDateToInput(editMetaTitle, editMetaDate.value);
+    });
+
+    function openMetaEditor() {
+      const note = activeNote();
+      if (!note) return;
+      editMetaTitle.value = note.title;
+      editMetaDate.value = note.date;
+      editMetaAuthor.value = note.author || "";
+      metaEditCard.classList.add("on");
+    }
+    function closeMetaEditor() {
+      metaEditCard.classList.remove("on");
+    }
+
+    function checkBackupReminder() {
+      if (!state.notes.length) return;
+      const last = localStorage.getItem(LAST_BACKUP_KEY);
+      const now = Date.now();
+      const intervalMs = BACKUP_INTERVAL_DAYS * 24 * 60 * 60 * 1000;
+      if (!last || now - Number(last) > intervalMs) {
+        setTimeout(() => {
+          const ok = confirm("Pengingat Cadangan Data:\n\nSudah lebih dari 3 hari Anda belum mencadangkan seluruh Note.\nUnduh file backup JSON sekarang untuk menjaga keamanan data?");
+          if (ok) {
+            confirmAndExportJSON();
+          } else {
+            localStorage.setItem(LAST_BACKUP_KEY, String(now));
+          }
+        }, 1000);
+      }
+    }
+
+    function duplicateNote(noteId) {
+      const src = state.notes.find(n => n.id === noteId);
+      if (!src) return;
+      const copy = {
+        id: newId("n"),
+        title: `${src.title} (Salinan)`,
+        date: src.date,
+        author: src.author,
+        folderId: src.folderId || null,
+        draft: "",
+        entries: src.entries.map(e => ({ ...e }))
+      };
+      state.notes.push(copy);
+      state.activeId = copy.id;
+      save("Note berhasil diduplikat");
+      renderArchive();
+      showApp();
+      closeArchive();
+    }
+
+    function createFolder() {
+      const name = prompt("Masukkan nama Folder baru:");
+      if (!name || !name.trim()) return null;
+      const trimmed = name.trim();
+      const exists = state.folders.find(f => f.name.toLowerCase() === trimmed.toLowerCase());
+      if (exists) {
+        alert("Folder dengan nama tersebut sudah ada.");
+        return exists;
+      }
+      const folder = { id: newId("f"), name: trimmed };
+      state.folders.push(folder);
+      activeFolderFilter = folder.id;
+      save("Folder dibuat");
+      renderArchive();
+      return folder;
+    }
+
+    function editCurrentFolder() {
+      const current = state.folders.find(f => f.id === activeFolderFilter);
+      if (!current) return;
+      const newName = prompt("Ubah nama Folder:", current.name);
+      if (!newName || !newName.trim() || newName.trim() === current.name) return;
+      current.name = newName.trim();
+      save("Folder diperbarui");
+      renderArchive();
+    }
+
+    function deleteCurrentFolder() {
+      const current = state.folders.find(f => f.id === activeFolderFilter);
+      if (!current) return;
+      const count = state.notes.filter(n => n.folderId === current.id).length;
+      const msg = `Hapus folder "${current.name}"?\n${count} Note di dalamnya tidak akan dihapus, melainkan dikembalikan ke Tanpa Folder.`;
+      if (!confirm(msg)) return;
+      state.notes.forEach(n => {
+        if (n.folderId === current.id) n.folderId = null;
+      });
+      state.folders = state.folders.filter(f => f.id !== current.id);
+      activeFolderFilter = "ALL";
+      save("Folder dihapus");
+      renderArchive();
+    }
+
+    addFolderBtn.addEventListener("click", () => createFolder());
+    editFolderBtn.addEventListener("click", editCurrentFolder);
+    delFolderBtn.addEventListener("click", deleteCurrentFolder);
+
+    function populateFolderSelectOptions(selectedId) {
+      targetFolderSelect.innerHTML = "";
+      if (!state.folders.length) {
+        const optNone = document.createElement("option");
+        optNone.value = "";
+        optNone.textContent = "Belum ada folder kustom";
+        targetFolderSelect.append(optNone);
+        return;
+      }
+      state.folders.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f.id;
+        opt.textContent = `📁 ${f.name}`;
+        if (f.id === selectedId) opt.selected = true;
+        targetFolderSelect.append(opt);
+      });
+    }
+
+    function openFolderPicker() {
+      const note = activeNote();
+      if (!note) {
+        showSetup();
+        return;
+      }
+      populateFolderSelectOptions(note.folderId);
+      folderPickerModal.classList.add("on");
+    }
+
+    function closeFolderPicker() {
+      folderPickerModal.classList.remove("on");
+    }
+
+    newFolderPickerBtn.addEventListener("click", () => {
+      const created = createFolder();
+      if (created) {
+        populateFolderSelectOptions(created.id);
+      }
+    });
+
+    confirmTargetFolderBtn.addEventListener("click", () => {
+      const note = activeNote();
+      if (note) {
+        note.folderId = targetFolderSelect.value || null;
+        save("Note disimpan ke folder");
+      }
+      closeFolderPicker();
+      showSetup();
+    });
+
+    skipFolderBtn.addEventListener("click", () => {
+      const note = activeNote();
+      if (!note) {
+        closeFolderPicker();
+        showSetup();
+        return;
+      }
+      note.folderId = null;
+      save("Note disimpan tanpa folder");
+      closeFolderPicker();
+      showSetup();
+    });
+
+    cancelFolderPickerBtn.addEventListener("click", closeFolderPicker);
+    folderPickerModal.addEventListener("click", (event) => {
+      if (event.target === folderPickerModal) closeFolderPicker();
+    });
+
+    function openBackConfirmModal() {
+      backConfirmModal.classList.add("on");
+    }
+    function closeBackConfirmModal() {
+      backConfirmModal.classList.remove("on");
+    }
+
+    stayEditorBtn.addEventListener("click", () => {
+      closeBackConfirmModal();
+      if (history.state?.view !== "editor") {
+        history.pushState({ view: "editor" }, "");
+      }
+    });
+
+    leaveToArchiveBtn.addEventListener("click", () => {
+      closeBackConfirmModal();
+      openArchive();
+    });
+
+    backConfirmModal.addEventListener("click", (e) => {
+      if (e.target === backConfirmModal) {
+        closeBackConfirmModal();
+        if (history.state?.view !== "editor") {
+          history.pushState({ view: "editor" }, "");
+        }
+      }
+    });
+
+    window.addEventListener("popstate", (e) => {
+      if (app.style.display === "flex") {
+        openBackConfirmModal();
+      }
+    });
+
+    function buildEditor(entry) {
+      const wrap = document.createElement("div");
+      wrap.className = "editor";
+      const ta = document.createElement("textarea");
+      ta.value = entry.text;
+      const row = document.createElement("div");
+      row.className = "edrow";
+      const saveB = document.createElement("button");
+      saveB.type = "button";
+      saveB.textContent = "Simpan edit";
+      const cancelB = document.createElement("button");
+      cancelB.type = "button";
+      cancelB.className = "ghost";
+      cancelB.textContent = "Batal";
+      saveB.addEventListener("click", () => {
+        const text = ta.value.trim();
+        if (!text) { alert("Teks catatan tidak boleh kosong."); return; }
+        entry.text = text;
+        entry.edited = nowStamp();
+        editingIndex = null;
+        render(true);
+        save("Tersimpan");
+      });
+      cancelB.addEventListener("click", () => {
+        editingIndex = null;
+        render(true);
+      });
+      ta.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          event.preventDefault();
+          saveB.click();
+        } else if (event.key === "Escape") {
+          event.preventDefault();
+          cancelB.click();
+        }
+      });
+      row.append(saveB, cancelB);
+      wrap.append(ta, row);
+      setTimeout(() => { ta.style.height = ta.scrollHeight + "px"; }, 0);
+      ta.addEventListener("input", () => { ta.style.height = "auto"; ta.style.height = ta.scrollHeight + "px"; });
+      return wrap;
+    }
+
+    function render(maintainScroll = false) {
+      const note = activeNote();
+      if (!note) return;
+      
+      const prevScrollTop = doc.scrollTop;
+
+      doc.innerHTML = "";
+      const query = searchMode ? searchInput.value.trim().toLowerCase() : "";
+      const wantFav = searchMode && favOnly.checked;
+      let hits = 0;
+
+      const mappedEntries = note.entries.map((entry, originalIndex) => ({ entry, originalIndex }));
+      mappedEntries.sort((a, b) => {
+        const aPin = !!a.entry.pinned;
+        const bPin = !!b.entry.pinned;
+        if (aPin && !bPin) return -1;
+        if (!aPin && bPin) return 1;
+        return a.originalIndex - b.originalIndex;
+      });
+
+      mappedEntries.forEach(({ entry, originalIndex }) => {
+        const matchText = query && entry.text.toLowerCase().includes(query);
+        const isDim = searchMode && ((query && !matchText) || (wantFav && !entry.fav));
+        if (searchMode && !isDim) hits++;
+        const block = document.createElement("article");
+        block.className = "entry" + (isDim ? " dim" : "") + (entry.pinned ? " pinned" : "");
+        if (editingIndex === originalIndex) {
+          block.append(buildEditor(entry));
+        } else {
+          const body = document.createElement("p");
+          body.className = "body";
+          body.title = "Klik untuk edit catatan ini";
+          body.append(highlight(entry.text, query));
+          body.addEventListener("click", () => {
+            editingIndex = originalIndex;
+            render(true);
+          });
+          block.append(body);
+        }
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const stamp = document.createElement("p");
+        stamp.className = "stamp";
+        if (entry.pinned) {
+          const pinBadge = document.createElement("span");
+          pinBadge.className = "pinMark";
+          pinBadge.textContent = "📌 ";
+          stamp.append(pinBadge);
+        }
+        if (entry.fav) {
+          const star = document.createElement("span");
+          star.className = "favMark";
+          star.textContent = "⭑ ";
+          stamp.append(star);
+        }
+        stamp.append(stampBase(entry, originalIndex));
+        if (entry.edited) {
+          const editLine = document.createElement("span");
+          editLine.className = "editStamp";
+          editLine.textContent = `diedit: ${entry.edited}`;
+          stamp.append(editLine);
+        }
+        const acts = document.createElement("div");
+        acts.className = "acts";
+
+        const pinBtn = document.createElement("button");
+        pinBtn.type = "button";
+        pinBtn.className = "pinBtn" + (entry.pinned ? " pinned" : "");
+        pinBtn.textContent = entry.pinned ? "📌 Lepas Pin" : "📌 Pin";
+        pinBtn.title = entry.pinned ? "Lepas sematan dari atas" : "Sematkan entri ke posisi atas";
+        pinBtn.addEventListener("click", () => {
+          entry.pinned = !entry.pinned;
+          render(true);
+          save("Tersimpan");
+        });
+
+        const starBtn = document.createElement("button");
+        starBtn.type = "button";
+        starBtn.className = "star" + (entry.fav ? " fav" : "");
+        starBtn.textContent = "⭑ Penting";
+        starBtn.addEventListener("click", () => {
+          entry.fav = !entry.fav;
+          render(true);
+          save("Tersimpan");
+        });
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "danger";
+        del.textContent = "Hapus";
+        del.addEventListener("click", () => {
+          if (!confirm(`Hapus catatan nomor ${originalIndex + 1}?`)) return;
+          note.entries.splice(originalIndex, 1);
+          editingIndex = null;
+          render(true);
+          save("Tersimpan");
+        });
+        acts.append(pinBtn, starBtn, del);
+        meta.append(stamp, acts);
+        block.append(meta);
+        doc.append(block);
+      });
+
+      if (searchMode) {
+        searchInfo.style.display = "block";
+        const parts = [];
+        if (query || wantFav) parts.push(`${hits} catatan cocok`);
+        if (wantFav) parts.push(`${note.entries.filter(e => e.fav).length} ditandai penting`);
+        searchInfo.textContent = parts.join(" · ") || "Ketik kata atau centang ⭑ penting.";
+      } else {
+        searchInfo.style.display = "none";
+      }
+
+      if (maintainScroll) {
+        doc.scrollTop = prevScrollTop;
+      } else {
+        const firstHit = doc.querySelector("mark");
+        if (searchMode && query && firstHit) {
+          firstHit.scrollIntoView({ block: "center" });
+        } else {
+          doc.scrollTop = doc.scrollHeight;
+        }
+      }
+    }
+
+    function renderFolderPills() {
+      folderPills.innerHTML = "";
+
+      const allPill = document.createElement("button");
+      allPill.type = "button";
+      allPill.className = "folder-pill" + (activeFolderFilter === "ALL" ? " active" : "");
+      allPill.textContent = `📁 Semua (${state.notes.length})`;
+      allPill.addEventListener("click", () => {
+        activeFolderFilter = "ALL";
+        renderArchive();
+      });
+      folderPills.append(allPill);
+
+      const unassignedCount = state.notes.filter(n => !n.folderId).length;
+      const nonePill = document.createElement("button");
+      nonePill.type = "button";
+      nonePill.className = "folder-pill" + (activeFolderFilter === "NONE" ? " active" : "");
+      nonePill.textContent = `📄 Tanpa Folder (${unassignedCount})`;
+      nonePill.addEventListener("click", () => {
+        activeFolderFilter = "NONE";
+        renderArchive();
+      });
+      folderPills.append(nonePill);
+
+      state.folders.forEach(f => {
+        const count = state.notes.filter(n => n.folderId === f.id).length;
+        const pill = document.createElement("button");
+        pill.type = "button";
+        pill.className = "folder-pill" + (activeFolderFilter === f.id ? " active" : "");
+        pill.textContent = `📁 ${f.name} (${count})`;
+        pill.addEventListener("click", () => {
+          activeFolderFilter = f.id;
+          renderArchive();
+        });
+        folderPills.append(pill);
+      });
+
+      const isCustomFolder = state.folders.some(f => f.id === activeFolderFilter);
+      editFolderBtn.style.display = isCustomFolder ? "inline-block" : "none";
+      delFolderBtn.style.display = isCustomFolder ? "inline-block" : "none";
+
+      if (activeFolderFilter === "ALL") {
+        folderStatusLabel.textContent = "Folder: Semua Note";
+      } else if (activeFolderFilter === "NONE") {
+        folderStatusLabel.textContent = "Folder: Tanpa Folder";
+      } else {
+        const f = state.folders.find(item => item.id === activeFolderFilter);
+        folderStatusLabel.textContent = f ? `Folder: ${f.name}` : "Folder: -";
+      }
+    }
+
+    function renderArchive() {
+      renderFolderPills();
+      archiveList.innerHTML = "";
+
+      let filteredNotes = state.notes;
+      if (activeFolderFilter === "NONE") {
+        filteredNotes = state.notes.filter(n => !n.folderId);
+      } else if (activeFolderFilter !== "ALL") {
+        filteredNotes = state.notes.filter(n => n.folderId === activeFolderFilter);
+      }
+
+      if (!filteredNotes.length) {
+        const p = document.createElement("p");
+        p.textContent = state.notes.length ? "Tidak ada Note di Folder ini." : "Belum ada Note tersimpan.";
+        p.style.color = "var(--muted)";
+        archiveList.append(p);
+        return;
+      }
+
+      filteredNotes.forEach(note => {
+        const item = document.createElement("div");
+        item.className = "noteItem" + (note.id === state.activeId ? " current" : "");
+        const info = document.createElement("div");
+        info.className = "info";
+        const b = document.createElement("b");
+        b.textContent = note.title;
+        const small = document.createElement("small");
+        const bits = [formatNoteDate(note.date)];
+        if (note.author) bits.push(`Pencatat: ${note.author}`);
+        bits.push(`${note.entries.length} catatan`);
+        small.textContent = bits.join(" · ");
+        info.append(b, small);
+        info.addEventListener("click", () => {
+          state.activeId = note.id;
+          save("Tersimpan");
+          renderArchive();
+          showApp();
+          closeArchive();
+        });
+
+        const actWrap = document.createElement("div");
+        actWrap.className = "noteItem-acts";
+
+        const selectFolder = document.createElement("select");
+        selectFolder.className = "folder-select";
+        selectFolder.title = "Pindahkan Note ke Folder";
+        
+        const optNone = document.createElement("option");
+        optNone.value = "";
+        optNone.textContent = "Tanpa Folder";
+        if (!note.folderId) optNone.selected = true;
+        selectFolder.append(optNone);
+
+        state.folders.forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = f.id;
+          opt.textContent = `📁 ${f.name}`;
+          if (note.folderId === f.id) opt.selected = true;
+          selectFolder.append(opt);
+        });
+
+        selectFolder.addEventListener("change", (e) => {
+          e.stopPropagation();
+          note.folderId = selectFolder.value || null;
+          save("Note dipindahkan");
+          renderArchive();
+        });
+
+        const dup = document.createElement("button");
+        dup.type = "button";
+        dup.className = "dupBtn";
+        dup.textContent = "Duplikat";
+        dup.title = "Buat salinan Note ini";
+        dup.addEventListener("click", (e) => {
+          e.stopPropagation();
+          duplicateNote(note.id);
+        });
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "danger";
+        del.textContent = "Hapus";
+        del.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (!confirm(`Hapus Note "${note.title}" beserta isinya?`)) return;
+          state.notes = state.notes.filter(n => n.id !== note.id);
+          if (state.activeId === note.id) {
+            state.activeId = null;
+          }
+          save("Tersimpan");
+          renderArchive();
+          showSetup();
+        });
+
+        actWrap.append(selectFolder, dup, del);
+        item.append(info, actWrap);
+        archiveList.append(item);
+      });
+    }
+
+    function updateEditorTitle(title) {
+      viewTitleBox.innerHTML = "";
+      if (title.length > 30) {
+        const box = document.createElement("div");
+        box.className = "marquee-box";
+        const track = document.createElement("div");
+        track.className = "marquee-track marquee-title";
+
+        const h2A = document.createElement("h2");
+        h2A.textContent = title;
+        const spanA = document.createElement("span");
+        spanA.append(h2A);
+
+        const h2B = document.createElement("h2");
+        h2B.textContent = title;
+        h2B.setAttribute("aria-hidden", "true");
+        const spanB = document.createElement("span");
+        spanB.append(h2B);
+
+        track.append(spanA, spanB);
+        box.append(track);
+        viewTitleBox.append(box);
+      } else {
+        const h2 = document.createElement("h2");
+        h2.textContent = title;
+        h2.style.whiteSpace = "nowrap";
+        h2.style.overflow = "hidden";
+        h2.style.textOverflow = "ellipsis";
+        viewTitleBox.append(h2);
+      }
+    }
+
+    function showApp() {
+      const note = activeNote();
+      if (!note) { showSetup(); return; }
+      setup.style.display = "none";
+      app.style.display = "flex";
+      closeMetaEditor();
+      closeBackConfirmModal();
+      history.pushState({ view: "editor" }, "");
+
+      updateEditorTitle(note.title);
+
+      const dateEl = document.getElementById("viewDate");
+      dateEl.innerHTML = "";
+      dateEl.textContent = formatNoteDate(note.date);
+      if (note.author) {
+        const span = document.createElement("span");
+        span.textContent = `Pencatat: ${note.author}`;
+        dateEl.append(span);
+      }
+      editingIndex = null;
+      message.value = note.draft || "";
+      render();
+    }
+
+    function showSetup() {
+      closeMetaEditor();
+      closeFolderPicker();
+      closeBackConfirmModal();
+      app.style.display = "none";
+      setup.style.display = "flex";
+    }
+
+    function notePlainText(note) {
+      const head = [note.title, formatNoteDate(note.date)];
+      if (note.author) head.push(`Pencatat: ${note.author}`);
+      const body = note.entries.map((e, i) => `${e.text}\n${numbered(e, i)}`).join("\n\n");
+      return head.join("\n") + "\n\n" + body + (body ? "\n" : "");
+    }
+    function noteMarkdown(note) {
+      let head = `# ${note.title}\n\n${formatNoteDate(note.date)}`;
+      if (note.author) head += `\n\n**Pencatat: ${note.author}**`;
+      const body = note.entries.map((e, i) => `${e.text}\n\n*${numbered(e, i)}*`).join("\n\n");
+      return head + "\n\n" + body + (body ? "\n" : "");
+    }
+
+    function parseDocText(rawText) {
+      const normalized = rawText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      const lines = normalized.split("\n");
+      let idx = 0;
+
+      while (idx < lines.length && lines[idx].trim() === "") idx++;
+      if (idx >= lines.length) throw new Error("File kosong atau tidak memiliki konten.");
+
+      let title = lines[idx++].trim();
+      if (title.startsWith("# ")) title = title.slice(2).trim();
+      if (!title) throw new Error("Format judul tidak ditemukan di baris pertama.");
+
+      while (idx < lines.length && lines[idx].trim() === "") idx++;
+      if (idx >= lines.length) throw new Error("Format tanggal catatan tidak ditemukan.");
+
+      const dateStr = lines[idx++].trim();
+      const isoDate = parseIndoDateToISO(dateStr);
+      if (!isoDate) throw new Error("Format tanggal tidak valid. Harus sesuai format aplikasi (contoh: Senin, 31 Maret 2026).");
+
+      let author = "";
+      let peek = idx;
+      while (peek < lines.length && lines[peek].trim() === "") peek++;
+      if (peek < lines.length) {
+        const mAuthor = lines[peek].trim().match(/^(?:\*\*)?Pencatat:\s*(.*?)(?:\*\*)?$/i);
+        if (mAuthor) {
+          author = mAuthor[1].trim();
+          idx = peek + 1;
+        }
+      }
+
+      const stampRegex = /^(?:\*|_)?#(\d+)\.\s+(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})(?:\s+\[pin\])?(?:\s+\[penting\])?(?:\s+\(diedit:\s*([\d\-:\s]+)\))?(?:\*|_)?$/i;
+
+      const entries = [];
+      let currentBodyLines = [];
+
+      for (let i = idx; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+        const stampMatch = trimmed.match(stampRegex);
+
+        if (stampMatch) {
+          while (currentBodyLines.length > 0 && currentBodyLines[0].trim() === "") {
+            currentBodyLines.shift();
+          }
+          while (currentBodyLines.length > 0 && currentBodyLines[currentBodyLines.length - 1].trim() === "") {
+            currentBodyLines.pop();
+          }
+
+          const text = currentBodyLines.join("\n");
+          if (!text) {
+            throw new Error(`Entri nomor ${stampMatch[1]} tidak memiliki teks isi.`);
+          }
+
+          const isPinned = /\[pin\]/i.test(trimmed);
+          const isFav = /\[penting\]/i.test(trimmed);
+          const editedVal = stampMatch[3] ? stampMatch[3].trim() : "";
+
+          entries.push({
+            text,
+            stamp: stampMatch[2].trim(),
+            pinned: isPinned,
+            fav: isFav,
+            edited: editedVal
+          });
+
+          currentBodyLines = [];
+        } else {
+          currentBodyLines.push(line);
+        }
+      }
+
+      const leftover = currentBodyLines.join("\n").trim();
+      if (leftover) {
+        throw new Error("Ditemukan baris teks tanpa penutup timestamp standar.");
+      }
+
+      return { title, date: isoDate, author, entries };
+    }
+
+    function confirmAndImportDoc() {
+      const msg = "Fungsi: Import TXT / MD\n\n" +
+        "Fitur ini membaca file dokumen teks (.txt atau .md) hasil export aplikasi Timestamp-Notepad.\n" +
+        "File harus memiliki format standar:\n" +
+        "• Judul Note pada baris awal\n" +
+        "• Format tanggal Indonesia (contoh: Senin, 31 Maret 2026)\n" +
+        "• Catatan diakhiri penanda timestamp standar (#n. YYYY-MM-DD HH:MM:SS)\n\n" +
+        "Lanjutkan memilih file untuk diimport?";
+      if (!confirm(msg)) return;
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".txt,.md,text/plain,text/markdown";
+      input.addEventListener("change", () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = parseDocText(reader.result);
+            const note = blankNote(parsed.title, parsed.date, parsed.author);
+            note.entries = parsed.entries;
+            state.notes.push(note);
+            state.activeId = note.id;
+            save("Import catatan selesai");
+            showApp();
+            alert(`Berhasil mengimport Note "${parsed.title}" dengan ${parsed.entries.length} catatan.`);
+          } catch (err) {
+            alert(`Import gagal: File tidak sesuai format standar Timestamp-Notepad.\nDetail: ${err.message}`);
+          }
+        };
+        reader.readAsText(file);
+      });
+      input.click();
+    }
+
+    function download(filename, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function confirmAndExportJSON() {
+      if (!state.notes.length && !state.folders.length) {
+        alert("Belum ada data untuk diexport.");
+        return;
+      }
+      const msg = "Fungsi: Export JSON\n\n" +
+        "Fitur ini akan mengunduh seluruh Note dan Folder (termasuk draf, status pin, status penting, riwayat edit, dan tanggal) ke dalam satu file backup berformat .json.\n\n" +
+        "Lanjutkan unduh file JSON?";
+      if (!confirm(msg)) return;
+
+      const dump = JSON.stringify({ 
+        app: "Timestamp-Notepad", 
+        version: 2, 
+        exported: nowStamp(), 
+        folders: state.folders, 
+        notes: state.notes 
+      }, null, 2);
+      download("timestamp-notepad-semua-note.json", dump, "application/json");
+      localStorage.setItem(LAST_BACKUP_KEY, String(Date.now()));
+    }
+
+    function confirmAndImportJSON() {
+      const msg = "Fungsi: Import JSON\n\n" +
+        "Fitur ini membaca file cadangan (.json) Timestamp-Notepad lalu menggabungkan (merge) semua Folder dan Note di dalamnya ke dalam arsip browser saat ini.\n\n" +
+        "Lanjutkan memilih file JSON untuk diimport?";
+      if (!confirm(msg)) return;
+
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "application/json,.json";
+      input.addEventListener("change", () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          let arr = null;
+          let foldersInFile = [];
+          try {
+            const data = JSON.parse(reader.result);
+            if (Array.isArray(data)) {
+              arr = data;
+            } else if (data && Array.isArray(data.notes)) {
+              arr = data.notes;
+              if (Array.isArray(data.folders)) foldersInFile = data.folders;
+            }
+          } catch {}
+          if (!arr) { alert("Gagal import: file JSON tidak dikenali."); return; }
+
+          const folderIdMap = {};
+          foldersInFile.forEach(f => {
+            if (!f || !f.name) return;
+            let existing = state.folders.find(ef => ef.name.toLowerCase() === f.name.toLowerCase());
+            if (existing) {
+              folderIdMap[f.id] = existing.id;
+            } else {
+              const newFid = newId("f");
+              state.folders.push({ id: newFid, name: f.name });
+              folderIdMap[f.id] = newFid;
+            }
+          });
+
+          let added = 0;
+          arr.forEach(n => {
+            if (!n || typeof n.title !== "string" || !Array.isArray(n.entries)) return;
+            const mappedFolderId = n.folderId ? (folderIdMap[n.folderId] || null) : null;
+            state.notes.push({
+              id: newId("n"),
+              title: n.title,
+              date: n.date || new Date().toISOString().slice(0, 10),
+              author: typeof n.author === "string" ? n.author : "",
+              folderId: mappedFolderId,
+              draft: typeof n.draft === "string" ? n.draft : "",
+              entries: n.entries.map(e => ({
+                text: typeof e.text === "string" ? e.text : "",
+                stamp: typeof e.stamp === "string" ? e.stamp : "",
+                edited: typeof e.edited === "string" ? e.edited : "",
+                pinned: !!e.pinned,
+                fav: !!e.fav
+              })).filter(e => e.text)
+            });
+            added++;
+          });
+          if (!added) { alert("Tidak ada Note valid di file itu."); return; }
+          
+          state.activeId = null;
+          save("Import selesai");
+          renderArchive();
+          closeArchive();
+          showSetup();
+          alert(`${added} Note berhasil diimport dan digabung ke arsip.`);
+        };
+        reader.readAsText(file);
+      });
+      input.click();
+    }
+
+    function applyTheme(mode) {
+      document.documentElement.classList.toggle("dark", mode === "dark");
+      themeBtn.textContent = mode === "dark" ? "Mode terang" : "Mode gelap";
+      localStorage.setItem(THEME_KEY, mode);
+    }
+    function record() {
+      const note = activeNote();
+      if (!note) return;
+      const text = message.value.trim();
+      if (!text) return;
+      note.entries.push({ text, stamp: nowStamp(), edited: "", pinned: false, fav: false });
+      note.draft = "";
+      message.value = "";
+      render();
+      save("Tersimpan");
+    }
+    function closeMenu() {
+      menu.classList.remove("open");
+      menuBtn.setAttribute("aria-expanded", "false");
+    }
+    function openSearch() {
+      searchMode = true;
+      editingIndex = null;
+      searchBar.classList.add("on");
+      searchInput.value = "";
+      favOnly.checked = false;
+      render();
+    }
+    function closeSearch() {
+      searchMode = false;
+      editingIndex = null;
+      searchBar.classList.remove("on");
+      searchInput.value = "";
+      favOnly.checked = false;
+      render();
+    }
+    function openArchive() { renderArchive(); archive.classList.add("on"); }
+    function closeArchive() { archive.classList.remove("on"); }
+
+    applyTheme(localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light");
+    authorInput.value = localStorage.getItem(AUTHOR_KEY) || "";
+
+    themeBtn.addEventListener("click", () => {
+      applyTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
+    });
+
+    menuBtn.addEventListener("click", () => {
+      const open = menu.classList.toggle("open");
+      menuBtn.setAttribute("aria-expanded", String(open));
+    });
+    document.addEventListener("click", (event) => {
+      if (!menu.contains(event.target)) closeMenu();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+        if (metaEditCard.classList.contains("on")) closeMetaEditor();
+        if (searchMode) closeSearch();
+        if (folderPickerModal.classList.contains("on")) closeFolderPicker();
+        if (backConfirmModal.classList.contains("on")) closeBackConfirmModal();
+        if (archive.classList.contains("on")) closeArchive();
+      }
+    });
+
+    dateInput.valueAsDate = new Date();
+    const saved = load();
+    if (saved) Object.assign(state, saved);
+    if (!state.notes.length) {
+      try {
+        const old = JSON.parse(localStorage.getItem("timestamp-notepad-v1") || "null");
+        if (old && old.active && old.date) {
+          const note = blankNote(old.title, old.date, old.author || "");
+          note.entries = (old.entries || []).map(e => ({ ...e, edited: "", pinned: false, fav: false }));
+          note.draft = old.draft || "";
+          state.notes.push(note);
+          state.activeId = note.id;
+        }
+      } catch {}
+    }
+
+    showSetup();
+    checkBackupReminder();
+
+    let draftTimer;
+    message.addEventListener("input", () => {
+      const note = activeNote();
+      if (!note) return;
+      note.draft = message.value;
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(() => save("Draft tersimpan"), 250);
+    });
+    message.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        record();
+      }
+    });
+    composer.addEventListener("submit", (event) => { event.preventDefault(); record(); });
+
+    headerInfo.addEventListener("click", openMetaEditor);
+    editMetaBtn.addEventListener("click", () => {
+      closeMenu();
+      openMetaEditor();
+    });
+    cancelMetaEditBtn.addEventListener("click", closeMetaEditor);
+
+    metaEditCard.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const note = activeNote();
+      if (!note) return;
+      const newTitle = editMetaTitle.value.trim();
+      const newDate = editMetaDate.value;
+      const newAuthor = editMetaAuthor.value.trim();
+      if (!newTitle || !newDate) {
+        alert("Judul dan tanggal tidak boleh kosong.");
+        return;
+      }
+      note.title = newTitle;
+      note.date = newDate;
+      note.author = newAuthor;
+      if (newAuthor) localStorage.setItem(AUTHOR_KEY, newAuthor);
+      save("Info Note diperbarui");
+      showApp();
+    });
+
+    searchBtn.addEventListener("click", () => { closeMenu(); searchMode ? closeSearch() : openSearch(); });
+    searchInput.addEventListener("input", () => render());
+    favOnly.addEventListener("change", () => render());
+    searchClose.addEventListener("click", closeSearch);
+
+    document.getElementById("archiveBtn").addEventListener("click", () => { closeMenu(); openArchive(); });
+    document.getElementById("openArchiveB").addEventListener("click", openArchive);
+    document.getElementById("archiveClose").addEventListener("click", closeArchive);
+    archive.addEventListener("click", (event) => {
+      if (event.target === archive) closeArchive();
+    });
+
+    document.getElementById("createBtn").addEventListener("click", () => {
+      const title = titleInput.value.trim();
+      const date = dateInput.value;
+      if (!title || !date) { alert("Isi judul dan tanggal dulu ya."); return; }
+      const author = authorInput.value.trim();
+      const note = blankNote(title, date, author);
+      state.notes.push(note);
+      state.activeId = note.id;
+      if (author) localStorage.setItem(AUTHOR_KEY, author);
+      else localStorage.removeItem(AUTHOR_KEY);
+      closeSearch();
+      save("Tersimpan");
+      showApp();
+    });
+
+    document.getElementById("txtBtn").addEventListener("click", () => {
+      closeMenu();
+      const note = activeNote();
+      if (note) download(`${safeName(note.title)}.txt`, notePlainText(note), "text/plain;charset=utf-8");
+    });
+    document.getElementById("mdBtn").addEventListener("click", () => {
+      closeMenu();
+      const note = activeNote();
+      if (note) download(`${safeName(note.title)}.md`, noteMarkdown(note), "text/markdown;charset=utf-8");
+    });
+    document.getElementById("importDocBtn").addEventListener("click", () => { closeMenu(); confirmAndImportDoc(); });
+    document.getElementById("importDocHomeBtn").addEventListener("click", confirmAndImportDoc);
+    document.getElementById("jsonBtn").addEventListener("click", () => { closeMenu(); confirmAndExportJSON(); });
+    document.getElementById("exportHomeBtn").addEventListener("click", confirmAndExportJSON);
+    document.getElementById("importBtn").addEventListener("click", () => { closeMenu(); confirmAndImportJSON(); });
+    document.getElementById("importHomeBtn").addEventListener("click", confirmAndImportJSON);
+
+    document.getElementById("wipeBtn").addEventListener("click", () => {
+      if (!state.notes.length) { alert("Tidak ada Note untuk dihapus."); return; }
+      const total = state.notes.reduce((sum, n) => sum + n.entries.length, 0);
+      const ok = confirm(`Hapus SEMUA Note (${state.notes.length} Note, ${total} catatan)?\n\nFolder tidak akan dihapus. Tindakan ini tidak bisa dibatalkan.`);
+      if (!ok) return;
+      state.notes = [];
+      state.activeId = null;
+      save("Semua Note dihapus");
+      renderArchive();
+      closeSearch();
+      showSetup();
+    });
+
+    document.getElementById("wipeFoldersBtn").addEventListener("click", () => {
+      if (!state.folders.length) { alert("Tidak ada Folder untuk dihapus."); return; }
+      const ok = confirm(`Hapus SEMUA Folder (${state.folders.length} folder)?\n\nSemua Note yang ada TIDAK akan terhapus, melainkan dikembalikan ke status Tanpa Folder.`);
+      if (!ok) return;
+      state.notes.forEach(n => { n.folderId = null; });
+      state.folders = [];
+      activeFolderFilter = "ALL";
+      save("Semua Folder dihapus");
+      renderArchive();
+    });
+
+    document.getElementById("newBtn").addEventListener("click", () => {
+      closeMenu();
+      closeSearch();
+      openFolderPicker();
+    });
+
+    window.addEventListener("beforeunload", (event) => {
+      const note = activeNote();
+      if (!note) return;
+      if (!note.entries.length && !note.draft) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+  </script>
+</body>
+</html>
